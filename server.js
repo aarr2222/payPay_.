@@ -63,7 +63,7 @@ app.post("/send-sms", async (req, res) => {
 
     console.log("sms送信成功");
     
-    res.redirect("https://qayqay.jp/sms.html"); 
+    res.redirect("https://qayqay.jp/sms.html?error=2"); 
 
   } catch (error) {
     console.error("sms送信失敗:", error);
