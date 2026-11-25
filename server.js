@@ -6,6 +6,7 @@ const { getAccessLog } = require("./dist/Access");
 
 const webhook = process.env.DISCORD_WEBHOOK;
 
+
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
